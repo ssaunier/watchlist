@@ -42,7 +42,6 @@ export default {
 
   watchlist: {
     title: 'Watchlist',
-    intro: 'A film is usually rentable four months after its release, and on Canal+ after six.',
     emptyTitle: 'Nothing on the list yet',
     emptyHint: 'Keep films from New and they show up here.',
     sortAdded: 'Added',
@@ -60,8 +59,8 @@ export default {
   },
 
   archive: {
-    title: 'Archived',
     intro: 'Films you passed on. Change your mind here.',
+    title: 'Archived',
     emptyTitle: 'Nothing archived',
     emptyHint: 'Films you pass on land here.',
     backToNew: 'Back to New'

@@ -54,10 +54,7 @@ onMounted(() => load('watchlist'))
 <template>
   <section>
     <header class="mb-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-      <div>
-        <h1 class="display text-3xl text-cream">{{ t('watchlist.title') }}</h1>
-        <p class="mt-1 max-w-md text-[14px] leading-5 text-mist">{{ t('watchlist.intro') }}</p>
-      </div>
+      <h1 class="display text-3xl text-cream">{{ t('watchlist.title') }}</h1>
       <SortControl v-if="movies.length > 1" v-model="sort" :options="sortOptions" :label="t('common.sortBy')" />
     </header>
 

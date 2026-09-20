@@ -42,7 +42,6 @@ export default {
 
   watchlist: {
     title: 'À voir',
-    intro: 'Un film se loue en général quatre mois après sa sortie, et arrive sur Canal+ après six.',
     emptyTitle: 'Rien sur la liste pour l’instant',
     emptyHint: 'Gardez des films depuis les Nouveautés, ils apparaîtront ici.',
     sortAdded: 'Ajout',
@@ -60,8 +59,8 @@ export default {
   },
 
   archive: {
-    title: 'Archivés',
     intro: 'Les films écartés. Changez d’avis ici.',
+    title: 'Archivés',
     emptyTitle: 'Aucun film archivé',
     emptyHint: 'Les films que vous passez arrivent ici.',
     backToNew: 'Remettre en Nouveautés'
