@@ -30,3 +30,6 @@ npm-debug.log*
 
 # Local test / coverage output
 coverage/
+
+# Claude Code: personal permissions for this machine
+.claude/settings.local.json
