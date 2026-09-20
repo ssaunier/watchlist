@@ -1,0 +1,83 @@
+@import "tailwindcss";
+@import "@fontsource-variable/fraunces/opsz.css";
+
+/*
+ * A movie theater with the lights down: the near-black of the room, the red
+ * velvet of the seats and curtains for anything raised, and the gold of the
+ * marquee as the one accent, spent on keeping a film, on ratings and on
+ * counts. Text is cream, like the screen before the film starts.
+ */
+@theme {
+  --color-ink: #140c0d;
+  --color-ink-2: #2a1416;
+  --color-ink-3: #4a2226;
+  --color-velvet: #7b1e2b;
+  --color-cream: #f4ecdf;
+  --color-mist: #bda49f;
+  --color-gold: #e9b949;
+  --color-gold-deep: #3a2a05;
+
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius-poster: 1.1rem;
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+    color: var(--color-cream);
+    background: var(--color-ink);
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Titles: Fraunces at its softer optical size, tight and slightly heavy. */
+  .display {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 72, "SOFT" 40, "WONK" 1;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-gold-deep);
+  }
+
+  dialog::backdrop {
+    background: rgb(10 4 5 / 0.72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

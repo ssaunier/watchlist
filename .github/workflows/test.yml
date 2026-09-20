@@ -1,0 +1,33 @@
+name: Test
+
+# Runs on its own for pull requests and for pushes to any branch but main.
+# On main the suite runs as the first job of the deploy workflow instead, via
+# workflow_call, so the deploy cannot start unless the tests pass on that
+# exact commit.
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build:production

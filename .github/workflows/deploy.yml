@@ -1,0 +1,59 @@
+name: Deploy
+
+# Every push to main that passes the tests goes to production: the database
+# migrations first, then the Worker with the app's files, then the secrets.
+# Needs four repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
+# TMDB_TOKEN and APP_PASSWORD (see README.md).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Before the build: the build writes a config redirect for the flattened
+      # production config, which has no environments left to select.
+      - name: Apply database migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply watchlist-production --remote --env production --config wrangler.jsonc
+
+      - name: Build
+        run: npm run build:production
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          secrets: |
+            TMDB_TOKEN
+            APP_PASSWORD
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}

@@ -1,0 +1,71 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// The top level is the development environment: what `vite dev`, `vite
+	// preview` and the test suite run. Its database is emulated locally by
+	// workerd, so nothing here exists in the cloud. Production is `env.production`
+	// below, selected at build time with CLOUDFLARE_ENV=production.
+	"name": "watchlist-dev",
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-09-20",
+	// The Vue build. `assets.directory` is filled in by @cloudflare/vite-plugin
+	// at build time. `/api/*` must reach the Worker even though an asset-first
+	// lookup would otherwise answer 404 for it; everything else that is not a
+	// file falls back to index.html for the client-side router.
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	// Hourly: the free plan limits one invocation to 50 subrequests and 10 ms
+	// of CPU, so the sync fetches a handful of new films per run and relies on
+	// frequent runs rather than one big weekly pass.
+	"triggers": {
+		"crons": [
+			"0 * * * *"
+		]
+	},
+	"observability": {
+		"enabled": true
+	},
+	// Hosted SQLite. Local development never contacts this database, so the id
+	// only has to look like one.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "watchlist-dev",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	// Which countries' cinema releases to watch (ISO 3166-1, comma-separated),
+	// how far a film may be re-released after its first release before it is
+	// treated as a re-release and skipped, and how many new films one sync run
+	// fetches details for.
+	"vars": {
+		"RELEASE_COUNTRIES": "FR",
+		"MAX_AGE_YEARS": "3",
+		"DETAILS_PER_RUN": "10"
+	},
+	"env": {
+		"production": {
+			"name": "watchlist",
+			// Bindings and vars are not inherited between environments, so they
+			// are repeated here. `database_id` comes from
+			// `wrangler d1 create watchlist-production`.
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "watchlist-production",
+					"database_id": "ececc990-8728-47a1-807a-2e559572eeea",
+					"migrations_dir": "migrations"
+				}
+			],
+			"vars": {
+				"RELEASE_COUNTRIES": "FR",
+				"MAX_AGE_YEARS": "3",
+				"DETAILS_PER_RUN": "10"
+			}
+		}
+	}
+}
