@@ -1,7 +1,9 @@
 <script setup>
 /**
  * The trailer, in place. The iframe exists only while the dialog is open,
- * so closing it stops the sound as well as the picture.
+ * so closing it stops the sound as well as the picture. Focus stays on the
+ * close button: a focused YouTube iframe keeps the Escape key for itself
+ * and the dialog would never hear it.
  */
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -31,6 +33,7 @@ watch(() => props.youtubeKey, key => {
           :src="trailerEmbedUrl(youtubeKey)"
           :title="title"
           class="size-full"
+          tabindex="-1"
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowfullscreen
           referrerpolicy="strict-origin-when-cross-origin"
@@ -38,6 +41,7 @@ watch(() => props.youtubeKey, key => {
       </div>
       <button
         type="button"
+        autofocus
         @click="emit('close')"
         :aria-label="t('common.close')"
         class="absolute -top-12 right-2 grid size-10 place-items-center rounded-full bg-ink-2 text-cream sm:-right-2"
