@@ -1,8 +1,9 @@
 /**
  * The Worker: a small JSON API under /api for the Vue app, behind the
- * household's password, and the hourly sync. The app's own files are served
- * by Cloudflare before this code runs (see wrangler.jsonc); they hold no
- * data, so the password only guards the API.
+ * household's password, the hourly sync, and the front door for the app's
+ * own files: plain http is sent to https, everything else is handed to the
+ * static assets (see wrangler.jsonc). The files hold no data, so the
+ * password only guards the API.
  */
 
 import { Hono } from 'hono'
@@ -13,6 +14,7 @@ import { createTmdbClient } from './tmdb.ts'
 
 export interface Env {
   DB: D1Database
+  ASSETS?: Fetcher
   TMDB_TOKEN: string
   APP_PASSWORD: string
   RELEASE_COUNTRIES: string
@@ -49,6 +51,30 @@ app.onError((error, c) => {
 })
 
 const isSecure = (c: { req: { url: string } }) => new URL(c.req.url).protocol === 'https:'
+
+/** Where plain http is fine: `vite dev` on this machine, or a phone on the home network. */
+export function isLocalHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '::1' ||
+    /^127\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+  )
+}
+
+const HSTS = 'max-age=31536000'
+
+/** Plain http becomes https, for the API and the pages alike. */
+app.use('*', async (c, next) => {
+  const url = new URL(c.req.url)
+  if (url.protocol === 'http:' && !isLocalHost(url.hostname)) {
+    url.protocol = 'https:'
+    return c.redirect(url.toString(), 301)
+  }
+  await next()
+})
 
 /** The password, as JSON, buys a cookie. */
 app.post('/api/login', async c => {
@@ -136,6 +162,17 @@ app.get('/api/status', async c => {
 app.post('/api/sync', async c => {
   const tmdb = createTmdbClient(c.env.TMDB_TOKEN)
   return c.json(await syncAll(c.env.DB, tmdb, c.env))
+})
+
+/** The app's files. Cloudflare answers index.html for the router's paths. */
+app.get('*', async c => {
+  if (c.req.path.startsWith('/api/') || !c.env.ASSETS) return c.notFound()
+  const asset = await c.env.ASSETS.fetch(c.req.raw)
+  if (!isSecure(c)) return asset
+  // A fetched response's headers are read-only; copy it to add one.
+  const response = new Response(asset.body, asset)
+  response.headers.set('Strict-Transport-Security', HSTS)
+  return response
 })
 
 app.notFound(c => c.json({ error: 'not found' }, 404))

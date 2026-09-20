@@ -8,14 +8,14 @@
 	"main": "src/worker/index.ts",
 	"compatibility_date": "2026-09-20",
 	// The Vue build. `assets.directory` is filled in by @cloudflare/vite-plugin
-	// at build time. `/api/*` must reach the Worker even though an asset-first
-	// lookup would otherwise answer 404 for it; everything else that is not a
-	// file falls back to index.html for the client-side router.
+	// at build time. Every request but the fingerprinted files under /assets
+	// goes through the Worker first: it answers the API, sends plain http to
+	// https, and hands the rest to the assets through the ASSETS binding, with
+	// index.html standing in for any path that is not a file (the router's).
 	"assets": {
+		"binding": "ASSETS",
 		"not_found_handling": "single-page-application",
-		"run_worker_first": [
-			"/api/*"
-		]
+		"run_worker_first": ["/*", "!/assets/*"]
 	},
 	// Hourly: the free plan limits one invocation to 50 subrequests and 10 ms
 	// of CPU, so the sync fetches a handful of new films per run and relies on
@@ -53,6 +53,8 @@
 			// The custom domain: Cloudflare creates the DNS record and the
 			// certificate on deploy. The zone must be on Cloudflare DNS.
 			"routes": [{ "pattern": "watchlist.saunier.me", "custom_domain": true }],
+			// The custom domain is the only address.
+			"workers_dev": false,
 			// Bindings and vars are not inherited between environments, so they
 			// are repeated here. `database_id` comes from
 			// `wrangler d1 create watchlist-production`.

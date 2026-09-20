@@ -1,6 +1,7 @@
 import { env, exports } from 'cloudflare:workers'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { safeEqual, sessionToken, SESSION_COOKIE } from '../../src/worker/auth.ts'
+import { isLocalHost } from '../../src/worker/index.ts'
 import { resetDb } from './fixtures.ts'
 
 const worker = exports.default
@@ -69,5 +70,30 @@ describe('the door', () => {
     const response = await worker.fetch('https://watchlist.test/api/logout', { method: 'POST' })
     expect(response.status).toBe(200)
     expect(response.headers.get('Set-Cookie')).toMatch(new RegExp(`^${SESSION_COOKIE}=; Path=/; Max-Age=0`))
+  })
+})
+
+describe('plain http', () => {
+  it('is sent to https, for pages and the API alike', async () => {
+    for (const path of ['/', '/watchlist', '/api/counts']) {
+      const response = await worker.fetch(`http://watchlist.saunier.me${path}?x=1`, { redirect: 'manual' })
+      expect(response.status).toBe(301)
+      expect(response.headers.get('Location')).toBe(`https://watchlist.saunier.me${path}?x=1`)
+    }
+  })
+
+  it('is left alone on this machine and on the home network', async () => {
+    for (const host of ['localhost:5173', '127.0.0.1:5173', '192.168.1.16:5173', '10.0.0.2', '172.20.0.1']) {
+      const response = await worker.fetch(`http://${host}/api/counts`, { headers: { Authorization: `Bearer ${PASSWORD}` } })
+      expect(response.status).toBe(200)
+    }
+    expect(isLocalHost('172.32.0.1')).toBe(false)
+    expect(isLocalHost('watchlist.saunier.me')).toBe(false)
+  })
+
+  it('answers 404 in JSON for an unknown API path, not the app’s page', async () => {
+    const response = await worker.fetch('https://watchlist.saunier.me/api/nothing', { headers: { Authorization: `Bearer ${PASSWORD}` } })
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({ error: 'not found' })
   })
 })
