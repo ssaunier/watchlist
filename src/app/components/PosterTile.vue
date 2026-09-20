@@ -1,21 +1,18 @@
 <script setup>
-/** A poster in a grid, with one line under it: when it came out, or the rating. */
+/** A poster in a grid: the title, then the rating once watched, else the language, runtime and genres as on New. */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMovieText } from '../composables/useMovieText.js'
 import { posterUrl } from '../services/images.js'
-import { relativeDay } from '../services/dates.js'
 import PosterRatings from './PosterRatings.vue'
 
 const props = defineProps({ movie: { type: Object, required: true } })
 defineEmits(['select'])
 const { t } = useI18n()
-const { release, ratings, locale } = useMovieText(() => props.movie)
+const { factsLine, genresLine, ratings } = useMovieText(() => props.movie)
 
-const caption = computed(() => {
-  if (props.movie.status === 'watched') return props.movie.rating ? t('film.ratingShort', { n: props.movie.rating }) : ''
-  return release.value ? relativeDay(release.value, locale.value) : ''
-})
+const watched = computed(() => props.movie.status === 'watched')
+const rating = computed(() => (watched.value && props.movie.rating ? t('film.ratingShort', { n: props.movie.rating }) : ''))
 </script>
 
 <template>
@@ -26,6 +23,10 @@ const caption = computed(() => {
       <PosterRatings :ratings="ratings" />
     </div>
     <p class="mt-1.5 line-clamp-2 text-[13px] leading-tight text-cream">{{ movie.title }}</p>
-    <p v-if="caption" :class="['text-[12px]', movie.status === 'watched' ? 'font-semibold text-gold' : 'text-mist']">{{ caption }}</p>
+    <p v-if="rating" class="text-[12px] font-semibold text-gold">{{ rating }}</p>
+    <template v-else-if="!watched">
+      <p v-if="factsLine" class="mt-0.5 truncate text-[12px] text-mist">{{ factsLine }}</p>
+      <p v-if="genresLine" class="truncate text-[12px] text-mist">{{ genresLine }}</p>
+    </template>
   </button>
 </template>

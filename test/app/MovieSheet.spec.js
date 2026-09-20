@@ -94,9 +94,13 @@ describe('MovieSheet', () => {
 })
 
 describe('PosterTile', () => {
-  it('captions with the release for a film to watch and the rating for a watched one', () => {
-    expect(render(PosterTile, { movie }).text()).toMatch(/Sham.*ago|Sham.*in \d/)
-    expect(render(PosterTile, { movie: { ...movie, status: 'watched', rating: 7 } }).text()).toContain('7/10')
+  it('captions with the language, runtime and genres for a film to watch and the rating for a watched one', () => {
+    const toWatch = render(PosterTile, { movie: { ...movie, status: 'watchlist' } }).text()
+    expect(toWatch).toContain('Korean, 1 h 41')
+    expect(toWatch).toContain('Thriller, Genre inconnu')
+    const watched = render(PosterTile, { movie: { ...movie, status: 'watched', rating: 7 } }).text()
+    expect(watched).toContain('7/10')
+    expect(watched).not.toContain('Korean')
   })
 
   it('emits the film when tapped', async () => {
