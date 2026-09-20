@@ -126,6 +126,11 @@ describe('GET /api/status', () => {
   })
 })
 
+it('keeps the Allociné refresh behind the password', async () => {
+  const response = await worker.fetch('https://watchlist.test/api/allocine', { method: 'POST' })
+  expect(response.status).toBe(401)
+})
+
 it('answers 404 in JSON for anything else under /api', async () => {
   expect(await api('/api/nothing')).toEqual({ status: 404, body: { error: 'not found' } })
 })

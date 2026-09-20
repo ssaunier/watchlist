@@ -46,6 +46,8 @@ export default {
     emptyHint: 'Keep films from New and they show up here.',
     sortAdded: 'Added',
     sortRelease: 'Release date',
+    sortPress: 'Press',
+    sortPublic: 'Audience',
     markWatched: 'Mark as watched'
   },
 
@@ -67,6 +69,9 @@ export default {
   },
 
   film: {
+    press: 'press',
+    public: 'audience',
+    allocine: 'Allociné',
     findTrailer: 'Find the trailer on YouTube',
     trailer: 'Watch trailer',
     released: 'In cinemas {when}',

@@ -27,3 +27,7 @@ export function trailerSearchUrl(movie, locale) {
   const query = [movie.originalTitle || movie.title, year, word].filter(Boolean).join(' ')
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
 }
+
+export function allocineUrl(allocineId) {
+  return allocineId ? `https://www.allocine.fr/film/fichefilm_gen_cfilm=${allocineId}.html` : null
+}

@@ -43,5 +43,17 @@ export function useMovieText(movieRef, country = 'FR') {
   const genresLine = computed(() => joinList(genres.value))
   const showOriginalTitle = computed(() => Boolean(movie.value?.originalTitle && movie.value.originalTitle !== movie.value.title))
 
-  return { language, runtime, genres, release, releaseText, releaseDate, factsLine, genresLine, showOriginalTitle, locale }
+  /** Allociné's ratings out of 5, "3,9" in French, "3.9" in English, press first. */
+  const ratings = computed(() => {
+    if (!movie.value) return []
+    const format = new Intl.NumberFormat(locale.value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+    return [
+      { key: 'press', value: movie.value.pressRating, label: t('film.press') },
+      { key: 'public', value: movie.value.publicRating, label: t('film.public') }
+    ]
+      .filter(entry => entry.value != null)
+      .map(entry => ({ ...entry, text: format.format(entry.value) }))
+  })
+
+  return { language, runtime, genres, release, releaseText, releaseDate, factsLine, genresLine, showOriginalTitle, ratings, locale }
 }

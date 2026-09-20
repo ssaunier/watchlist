@@ -61,6 +61,7 @@ export interface Movie {
   voteCount: number | null
   pressRating: number | null
   publicRating: number | null
+  allocineId: number | null
   releases: { country: string; date: string; type: number }[]
   status: Status
   createdAt: string
@@ -129,6 +130,29 @@ export function ensureEntry(db: D1Database, tmdbId: number, now: string): Statem
     .bind(tmdbId, now, now)
 }
 
+/** The films that reached a country's cinemas in a date range: what an Allociné week can match. */
+export async function moviesReleasedBetween(db: D1Database, country: string, from: string, to: string): Promise<{ tmdb_id: number; title: string; original_title: string; release_date: string }[]> {
+  const { results } = await db
+    .prepare(`SELECT m.tmdb_id, m.title, m.original_title, r.release_date FROM movies m JOIN releases r ON r.tmdb_id = m.tmdb_id WHERE r.country = ? AND r.release_date BETWEEN ? AND ?`)
+    .bind(country, from, to)
+    .all<{ tmdb_id: number; title: string; original_title: string; release_date: string }>()
+  return results
+}
+
+export interface RatingsRow {
+  tmdb_id: number
+  allocine_id: number
+  press_rating: number | null
+  public_rating: number | null
+  ratings_fetched_at: string
+}
+
+export function updateRatings(db: D1Database, row: RatingsRow): Statement {
+  return db
+    .prepare(`UPDATE movies SET allocine_id = ?, press_rating = ?, public_rating = ?, ratings_fetched_at = ? WHERE tmdb_id = ?`)
+    .bind(row.allocine_id, row.press_rating, row.public_rating, row.ratings_fetched_at, row.tmdb_id)
+}
+
 export function insertSyncRun(db: D1Database, run: { started_at: string; finished_at: string; country: string; stats: string }): Statement {
   return db
     .prepare(`INSERT INTO sync_runs (started_at, finished_at, country, stats) VALUES (?, ?, ?, ?)`)
@@ -137,13 +161,13 @@ export function insertSyncRun(db: D1Database, run: { started_at: string; finishe
 
 const MOVIE_SELECT = `
   SELECT m.tmdb_id, m.title, m.original_title, m.original_language, m.overview, m.genres, m.runtime, m.poster_path,
-         m.primary_release_date, m.trailer_youtube_key, m.tmdb_vote_average, m.tmdb_vote_count, m.press_rating, m.public_rating,
+         m.primary_release_date, m.trailer_youtube_key, m.tmdb_vote_average, m.tmdb_vote_count, m.press_rating, m.public_rating, m.allocine_id,
          e.status, e.created_at, e.updated_at, e.added_at, e.watched_at, e.rating, e.note,
          (SELECT json_group_array(json_object('country', r.country, 'date', r.release_date, 'type', r.release_type))
             FROM releases r WHERE r.tmdb_id = m.tmdb_id) AS releases
   FROM entries e JOIN movies m ON m.tmdb_id = e.tmdb_id`
 
-type MovieQueryRow = Omit<MovieRow, 'tmdb_json' | 'fetched_at'> & EntryRow & { press_rating: number | null; public_rating: number | null; releases: string }
+type MovieQueryRow = Omit<MovieRow, 'tmdb_json' | 'fetched_at'> & EntryRow & { press_rating: number | null; public_rating: number | null; allocine_id: number | null; releases: string }
 
 function toMovie(row: MovieQueryRow): Movie {
   return {
@@ -161,6 +185,7 @@ function toMovie(row: MovieQueryRow): Movie {
     voteCount: row.tmdb_vote_count,
     pressRating: row.press_rating,
     publicRating: row.public_rating,
+    allocineId: row.allocine_id,
     releases: JSON.parse(row.releases || '[]'),
     status: row.status,
     createdAt: row.created_at,

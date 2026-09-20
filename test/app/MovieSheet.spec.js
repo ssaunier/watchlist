@@ -60,6 +60,21 @@ describe('MovieSheet', () => {
     wrapper.unmount()
   })
 
+  it('shows Allociné’s ratings in the reader’s number format, with a link to the page', async () => {
+    const wrapper = render(MovieSheet, { movie: null }, 'fr')
+    await wrapper.setProps({ movie: { ...movie, pressRating: 3.9, publicRating: 3.8, allocineId: 1000018854 } })
+    expect(wrapper.text()).toMatch(/3,9\s*presse/)
+    expect(wrapper.text()).toMatch(/3,8\s*spectateurs/)
+    expect(wrapper.find('a[href="https://www.allocine.fr/film/fichefilm_gen_cfilm=1000018854.html"]').exists()).toBe(true)
+    wrapper.unmount()
+
+    const english = render(MovieSheet, { movie: null }, 'en')
+    await english.setProps({ movie: { ...movie, pressRating: 3.9, publicRating: null } })
+    expect(english.text()).toMatch(/3\.9\s*press/)
+    expect(english.text()).not.toContain('audience')
+    english.unmount()
+  })
+
   it('speaks French, with a capitalised language name', async () => {
     const wrapper = render(MovieSheet, { movie: null }, 'fr')
     await wrapper.setProps({ movie })

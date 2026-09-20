@@ -5,13 +5,14 @@
  */
 import { useMovieText } from '../composables/useMovieText.js'
 import { posterUrl } from '../services/images.js'
+import RatingsLine from './RatingsLine.vue'
 
 const props = defineProps({
   movie: { type: Object, required: true },
   /** Behind the top card the details are hidden; only the poster shows. */
   muted: { type: Boolean, default: false }
 })
-const { factsLine, genresLine, releaseText } = useMovieText(() => props.movie)
+const { factsLine, genresLine, releaseText, ratings } = useMovieText(() => props.movie)
 </script>
 
 <template>
@@ -31,6 +32,7 @@ const { factsLine, genresLine, releaseText } = useMovieText(() => props.movie)
       <h2 class="display text-[1.85rem] text-cream text-balance">{{ movie.title }}</h2>
       <p class="mt-1.5 text-[15px] text-cream/90">{{ factsLine }}</p>
       <p v-if="genresLine" class="text-[15px] text-mist">{{ genresLine }}</p>
+      <RatingsLine :ratings="ratings" size="text-[14px]" class="mt-1.5" />
       <p v-if="releaseText" class="mt-1.5 text-[13px] text-mist">{{ releaseText }}</p>
     </div>
 
