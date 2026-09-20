@@ -49,6 +49,17 @@ describe('MovieSheet', () => {
     wrapper.unmount()
   })
 
+  it('offers a YouTube search when TMDB has no trailer, above the synopsis', async () => {
+    const wrapper = render(MovieSheet, { movie: null }, 'fr')
+    await wrapper.setProps({ movie: { ...movie, trailerYoutubeKey: null } })
+    const link = wrapper.find('a[target="_blank"]')
+    expect(link.attributes('href')).toBe('https://www.youtube.com/results?search_query=%EC%83%B4%202026%20bande-annonce')
+    expect(link.text()).toContain('Chercher la bande-annonce')
+    const html = wrapper.html()
+    expect(html.indexOf('bande-annonce')).toBeLessThan(html.indexOf('A short synopsis.'))
+    wrapper.unmount()
+  })
+
   it('speaks French, with a capitalised language name', async () => {
     const wrapper = render(MovieSheet, { movie: null }, 'fr')
     await wrapper.setProps({ movie })

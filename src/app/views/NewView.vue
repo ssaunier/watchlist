@@ -7,6 +7,7 @@ import { useLocale } from '../composables/useLocale.js'
 import { useSheet } from '../composables/useSheet.js'
 import { useBreakpoint } from '../composables/useBreakpoint.js'
 import { releaseWeek } from '../services/dates.js'
+import { trailerSearchUrl } from '../services/images.js'
 import SwipeDeck from '../components/SwipeDeck.vue'
 import NewBrowse from '../components/NewBrowse.vue'
 import MovieSheet from '../components/MovieSheet.vue'
@@ -15,7 +16,7 @@ import PillButton from '../components/PillButton.vue'
 import EmptyState from '../components/EmptyState.vue'
 
 const { t } = useI18n()
-const { collator } = useLocale()
+const { collator, locale } = useLocale()
 const { lists, loading, counts, load, move, undo } = useMovies()
 const sheet = useSheet()
 const { isDesktop } = useBreakpoint()
@@ -94,6 +95,7 @@ onMounted(() => load('new'))
         <div class="flex flex-col items-center gap-1 text-[14px]">
           <button type="button" @click="sheet.open(top)" class="rounded-full px-3 py-1 text-cream/90 hover:text-cream">{{ t('deck.synopsis') }}</button>
           <button v-if="top.trailerYoutubeKey" type="button" @click="sheet.playTrailer(top)" class="rounded-full px-3 py-1 text-cream/90 hover:text-cream">{{ t('film.trailer') }}</button>
+          <a v-else :href="trailerSearchUrl(top, locale)" target="_blank" rel="noreferrer" class="rounded-full px-3 py-1 text-mist hover:text-cream">{{ t('film.findTrailer') }}</a>
         </div>
 
         <button

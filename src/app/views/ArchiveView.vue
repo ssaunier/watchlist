@@ -36,8 +36,8 @@ onMounted(() => load('archived'))
     <PosterGrid v-else :movies="movies" @select="sheet.open" />
 
     <MovieSheet :movie="sheet.selected.value" @close="sheet.close" @trailer="sheet.playTrailer">
-      <PillButton primary @click="moveTo(sheet.selected.value, 'watchlist')">{{ t('common.addToWatchlist') }}</PillButton>
       <PillButton @click="moveTo(sheet.selected.value, 'new')">{{ t('archive.backToNew') }}</PillButton>
+      <PillButton primary @click="moveTo(sheet.selected.value, 'watchlist')">{{ t('common.addToWatchlist') }}</PillButton>
     </MovieSheet>
     <TrailerModal :youtube-key="sheet.trailer.value?.trailerYoutubeKey ?? null" :title="sheet.trailer.value?.title ?? ''" @close="sheet.stopTrailer" />
   </section>

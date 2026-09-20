@@ -66,8 +66,8 @@ onMounted(() => load('watchlist'))
     <PosterGrid v-else :movies="movies" @select="sheet.open" />
 
     <MovieSheet :movie="sheet.selected.value" @close="sheet.close" @trailer="sheet.playTrailer">
-      <PillButton primary @click="startRating(sheet.selected.value)">{{ t('watchlist.markWatched') }}</PillButton>
       <PillButton @click="archive(sheet.selected.value)">{{ t('common.archive') }}</PillButton>
+      <PillButton primary @click="startRating(sheet.selected.value)">{{ t('watchlist.markWatched') }}</PillButton>
     </MovieSheet>
     <RatingDialog :movie="rating" @confirm="watched" @cancel="rating = null" />
     <TrailerModal :youtube-key="sheet.trailer.value?.trailerYoutubeKey ?? null" :title="sheet.trailer.value?.title ?? ''" @close="sheet.stopTrailer" />

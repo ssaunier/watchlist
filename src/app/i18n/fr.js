@@ -19,12 +19,12 @@ export default {
     dismiss: 'OK',
     sortBy: 'Trier par',
     archive: 'Archiver',
-    addToWatchlist: 'Ajouter à la watchlist'
+    addToWatchlist: 'Ajouter aux films à voir'
   },
 
   nav: {
     new: 'Nouveautés',
-    watchlist: 'Watchlist',
+    watchlist: 'À voir',
     watched: 'Vus'
   },
 
@@ -41,7 +41,7 @@ export default {
   },
 
   watchlist: {
-    title: 'Watchlist',
+    title: 'À voir',
     intro: 'Un film se loue en général quatre mois après sa sortie, et arrive sur Canal+ après six.',
     emptyTitle: 'Rien sur la liste pour l’instant',
     emptyHint: 'Gardez des films depuis les Nouveautés, ils apparaîtront ici.',
@@ -53,7 +53,7 @@ export default {
   watched: {
     title: 'Vus',
     emptyTitle: 'Aucun film vu',
-    emptyHint: 'Marquez un film comme vu depuis la watchlist.',
+    emptyHint: 'Marquez un film comme vu depuis les films à voir.',
     sortDate: 'Date',
     sortRating: 'Note',
     watchAgain: 'Revoir'
@@ -68,6 +68,7 @@ export default {
   },
 
   film: {
+    findTrailer: 'Chercher la bande-annonce sur YouTube',
     trailer: 'Voir la bande-annonce',
     released: 'En salle {when}',
     releasesOn: 'En salle {when}',

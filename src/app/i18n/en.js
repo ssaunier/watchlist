@@ -68,6 +68,7 @@ export default {
   },
 
   film: {
+    findTrailer: 'Find the trailer on YouTube',
     trailer: 'Watch trailer',
     released: 'In cinemas {when}',
     releasesOn: 'In cinemas {when}',

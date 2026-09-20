@@ -15,3 +15,15 @@ export function trailerEmbedUrl(youtubeKey) {
 export function trailerUrl(youtubeKey) {
   return youtubeKey ? `https://www.youtube.com/watch?v=${youtubeKey}` : null
 }
+
+/**
+ * When TMDB has no trailer on file (common for small French releases), a
+ * YouTube search for the original title, its year and "trailer" in the
+ * UI's language finds the distributor's upload most of the time.
+ */
+export function trailerSearchUrl(movie, locale) {
+  const year = (movie.primaryReleaseDate || movie.releases?.[0]?.date || '').slice(0, 4)
+  const word = locale === 'fr' ? 'bande-annonce' : 'trailer'
+  const query = [movie.originalTitle || movie.title, year, word].filter(Boolean).join(' ')
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
+}
