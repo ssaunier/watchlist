@@ -3,11 +3,12 @@
 import { useI18n } from 'vue-i18n'
 import { useMovieText } from '../composables/useMovieText.js'
 import { posterUrl } from '../services/images.js'
+import RatingsLine from './RatingsLine.vue'
 
 const props = defineProps({ movie: { type: Object, required: true } })
 defineEmits(['keep', 'pass', 'open'])
 const { t } = useI18n()
-const { factsLine, genresLine } = useMovieText(() => props.movie)
+const { factsLine, genresLine, ratings } = useMovieText(() => props.movie)
 </script>
 
 <template>
@@ -20,6 +21,7 @@ const { factsLine, genresLine } = useMovieText(() => props.movie)
       <p class="mt-2 line-clamp-2 text-[14px] leading-tight text-cream">{{ movie.title }}</p>
       <p class="mt-0.5 truncate text-[12px] text-mist">{{ factsLine }}</p>
       <p v-if="genresLine" class="truncate text-[12px] text-mist">{{ genresLine }}</p>
+      <RatingsLine :ratings="ratings" size="text-[12px]" class="mt-1" />
     </button>
     <div class="mt-auto flex gap-1.5 pt-2">
       <button type="button" @click="$emit('pass', movie)" class="flex-1 rounded-full border border-ink-3 py-1 text-[13px] font-semibold text-mist transition hover:border-mist hover:text-cream">{{ t('deck.pass') }}</button>

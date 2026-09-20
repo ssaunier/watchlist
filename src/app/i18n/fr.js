@@ -46,6 +46,8 @@ export default {
     emptyHint: 'Gardez des films depuis les Nouveautés, ils apparaîtront ici.',
     sortAdded: 'Ajout',
     sortRelease: 'Date de sortie',
+    sortPress: 'Presse',
+    sortPublic: 'Spectateurs',
     markWatched: 'Marquer comme vu'
   },
 
@@ -67,6 +69,9 @@ export default {
   },
 
   film: {
+    press: 'presse',
+    public: 'spectateurs',
+    allocine: 'Allociné',
     findTrailer: 'Chercher la bande-annonce sur YouTube',
     trailer: 'Voir la bande-annonce',
     released: 'En salle {when}',

@@ -14,21 +14,28 @@ import EmptyState from '../components/EmptyState.vue'
 
 const { t } = useI18n()
 const { lists, loading, load, move } = useMovies()
-const { sort } = useSortPreference('watchlist', ['added', 'release'])
+const { sort } = useSortPreference('watchlist', ['added', 'release', 'press', 'public'])
 const sheet = useSheet()
 const rating = ref(null)
 
+const hasRatings = computed(() => (lists.watchlist || []).some(movie => movie.pressRating != null || movie.publicRating != null))
+
+/** The rating sorts only appear once Allociné has rated something on the list. */
 const sortOptions = computed(() => [
   { value: 'added', label: t('watchlist.sortAdded') },
-  { value: 'release', label: t('watchlist.sortRelease') }
+  { value: 'release', label: t('watchlist.sortRelease') },
+  ...(hasRatings.value ? [{ value: 'press', label: t('watchlist.sortPress') }, { value: 'public', label: t('watchlist.sortPublic') }] : [])
 ])
 
 const releaseOf = movie => movie.releases[0]?.date || movie.primaryReleaseDate || ''
+const byRating = key => (a, b) => (b[key] ?? -1) - (a[key] ?? -1) || String(b.addedAt).localeCompare(String(a.addedAt))
 
-/** Added: newest first. Release date: oldest first, the ones most likely streamable by now. */
+/** Added: newest first. Release date: oldest first, the ones most likely streamable by now. Ratings: best first, unrated last. */
 const movies = computed(() => {
   const items = [...(lists.watchlist || [])]
   if (sort.value === 'release') return items.sort((a, b) => releaseOf(a).localeCompare(releaseOf(b)))
+  if (sort.value === 'press') return items.sort(byRating('pressRating'))
+  if (sort.value === 'public') return items.sort(byRating('publicRating'))
   return items.sort((a, b) => String(b.addedAt).localeCompare(String(a.addedAt)))
 })
 

@@ -9,7 +9,8 @@
 import { Hono } from 'hono'
 import { clearedSessionCookie, isAuthorized, safeEqual, sessionCookie, sessionToken } from './auth.ts'
 import { countByStatus, getMovie, lastSyncRun, listMovies, updateEntry, STATUSES, type EntryPatch, type Status } from './db.ts'
-import { syncAll } from './sync.ts'
+import { syncAll, syncWindow } from './sync.ts'
+import { syncAllocine, weeksForRun, wednesdaysIn } from './allocine.ts'
 import { createTmdbClient } from './tmdb.ts'
 
 export interface Env {
@@ -175,6 +176,12 @@ app.get('*', async c => {
   return response
 })
 
+/** Allociné ratings for every week of the window, on demand. */
+app.post('/api/allocine', async c => {
+  const window = syncWindow(new Date())
+  return c.json(await syncAllocine(c.env.DB, wednesdaysIn(window), window))
+})
+
 app.notFound(c => c.json({ error: 'not found' }, 404))
 
 export default {
@@ -182,6 +189,13 @@ export default {
 
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     const tmdb = createTmdbClient(env.TMDB_TOKEN)
-    ctx.waitUntil(syncAll(env.DB, tmdb, env).then(stats => console.log('sync', JSON.stringify(stats))))
+    const now = new Date()
+    ctx.waitUntil(
+      (async () => {
+        console.log('sync', JSON.stringify(await syncAll(env.DB, tmdb, env, now)))
+        const window = syncWindow(now)
+        console.log('allocine', JSON.stringify(await syncAllocine(env.DB, weeksForRun(window, now), window, fetch, now)))
+      })()
+    )
   }
 } satisfies ExportedHandler<Env>

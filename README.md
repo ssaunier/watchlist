@@ -17,6 +17,11 @@ later and on Canal+ after six. By then, the deciding has already been done.
   (French title and synopsis, genres, runtime, poster, the original-version
   trailer) and stores them. Re-releases are ignored. This product uses the
   TMDB API but is not endorsed or certified by TMDB.
+- **Ratings** come from [Allociné](https://www.allocine.fr/): its weekly
+  release agenda is read (one HTML page per Wednesday, no API exists) for the
+  press and spectator ratings out of 5, matched to TMDB's films by title.
+  Two weeks are refreshed every hour, rotating, so ratings follow the votes;
+  `POST /api/allocine` refreshes the whole window at once.
 - **Storage** is [Cloudflare D1](https://developers.cloudflare.com/d1/), a
   hosted SQLite. Films, their release date per country, and the household's
   entries (status, added/watched dates, rating, note).
@@ -135,4 +140,5 @@ test/app/            Vitest in jsdom
 | `PATCH /api/movies/:tmdbId` | `{ status?, rating?, note? }`; moves follow `TRANSITIONS` in `src/worker/index.ts` |
 | `GET /api/counts` | Films per list |
 | `GET /api/status` | Last sync run and counts |
-| `POST /api/sync` | Run the sync now |
+| `POST /api/sync` | Run the TMDB sync now |
+| `POST /api/allocine` | Refresh Allociné's ratings for the whole window now |
