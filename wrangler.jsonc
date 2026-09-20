@@ -50,6 +50,9 @@
 	"env": {
 		"production": {
 			"name": "watchlist",
+			// The custom domain: Cloudflare creates the DNS record and the
+			// certificate on deploy. The zone must be on Cloudflare DNS.
+			"routes": [{ "pattern": "watchlist.saunier.me", "custom_domain": true }],
 			// Bindings and vars are not inherited between environments, so they
 			// are repeated here. `database_id` comes from
 			// `wrangler d1 create watchlist-production`.
