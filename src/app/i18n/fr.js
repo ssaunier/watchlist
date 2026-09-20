@@ -4,9 +4,6 @@ export default {
     loading: 'Chargement…',
     errorTitle: 'Un changement n’a pas été enregistré',
     language: 'Langue',
-    tmdb: 'Données TMDB. Ce produit utilise l’API TMDB sans être approuvé ni certifié par TMDB.',
-    lastSync: 'Sorties mises à jour {when}',
-    logout: 'Se déconnecter',
     archivedLink: 'Archivés {n}'
   },
 

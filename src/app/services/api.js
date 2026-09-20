@@ -38,7 +38,3 @@ export function getStatus() {
 export function login(password) {
   return request('/api/login', { method: 'POST', body: JSON.stringify({ password }) })
 }
-
-export function logout() {
-  return request('/api/logout', { method: 'POST' })
-}

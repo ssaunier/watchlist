@@ -4,24 +4,21 @@ import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useMovies } from './composables/useMovies.js'
 import { useLocale } from './composables/useLocale.js'
-import { relativeDay } from './services/dates.js'
 import { useAuth } from './composables/useAuth.js'
 import TabBar from './components/TabBar.vue'
 import LoginScreen from './components/LoginScreen.vue'
 
-const { counts, lastSync, error, refreshStatus } = useMovies()
-const { locale, locales, setLocale } = useLocale()
+const { counts, error, refreshStatus } = useMovies()
+const { locales, locale, setLocale } = useLocale()
 const { t } = useI18n()
 const route = useRoute()
-const { locked, logout } = useAuth()
+const { locked } = useAuth()
 
 const tabs = computed(() => [
   { to: '/', name: 'new', label: t('nav.new'), count: counts.new, accent: true },
   { to: '/watchlist', name: 'watchlist', label: t('nav.watchlist'), count: counts.watchlist },
   { to: '/watched', name: 'watched', label: t('nav.watched'), count: counts.watched }
 ])
-
-const syncedWhen = computed(() => (lastSync.value?.finished_at ? relativeDay(lastSync.value.finished_at, locale.value) : null))
 
 onMounted(() => refreshStatus())
 </script>
@@ -62,11 +59,6 @@ onMounted(() => refreshStatus())
         <button type="button" @click="error = null" class="ml-2 font-semibold text-gold">{{ t('common.dismiss') }}</button>
       </div>
       <RouterView />
-      <p class="mt-auto pt-24 text-center text-[12px] text-mist/60">
-        <span v-if="syncedWhen">{{ t('app.lastSync', { when: syncedWhen }) }}. </span>
-        <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer" class="hover:text-mist">{{ t('app.tmdb') }}</a>
-        <button type="button" @click="logout" class="ml-2 underline decoration-ink-3 underline-offset-4 hover:text-mist">{{ t('app.logout') }}</button>
-      </p>
     </main>
 
     <TabBar :tabs="tabs" class="md:hidden" />

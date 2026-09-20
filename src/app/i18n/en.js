@@ -4,9 +4,6 @@ export default {
     loading: 'Loading…',
     errorTitle: 'Something didn’t save',
     language: 'Language',
-    tmdb: 'Film data from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
-    lastSync: 'Releases updated {when}',
-    logout: 'Log out',
     archivedLink: 'Archived {n}'
   },
 

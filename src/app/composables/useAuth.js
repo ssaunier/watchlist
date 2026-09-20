@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { login as requestLogin, logout as requestLogout, setUnauthorizedHandler } from '../services/api.js'
+import { login as requestLogin, setUnauthorizedHandler } from '../services/api.js'
 
 /**
  * Whether the household's password has been given. Unknown until the first
@@ -16,11 +16,6 @@ async function login(password) {
   location.reload()
 }
 
-async function logout() {
-  await requestLogout()
-  location.reload()
-}
-
 export function useAuth() {
-  return { locked, login, logout }
+  return { locked, login }
 }
