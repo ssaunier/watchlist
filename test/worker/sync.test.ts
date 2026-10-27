@@ -1,10 +1,10 @@
 import { env } from 'cloudflare:workers'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { isReRelease, pickTrailer, pickRelease, parseCountries, syncCountry, syncWindow, movieRowFrom, type SyncConfig } from '../../src/worker/sync.ts'
+import { isReRelease, isShort, isWantedOrigin, pickTrailer, pickRelease, parseCountries, syncCountry, syncWindow, movieRowFrom, type SyncConfig } from '../../src/worker/sync.ts'
 import { countByStatus, listMovies } from '../../src/worker/db.ts'
 import { fakeTmdb, movieDetails, resetDb, video, type FakeFilm } from './fixtures.ts'
 
-const config: SyncConfig = { maxAgeYears: 3, detailsPerRun: 10 }
+const config: SyncConfig = { maxAgeYears: 3, detailsPerRun: 10, originCountries: ['FR', 'US', 'KR'] }
 const today = new Date('2026-09-20T10:00:00Z')
 
 beforeEach(() => resetDb(env.DB))
@@ -21,6 +21,41 @@ describe('isReRelease', () => {
   it('keeps a film with no primary date', () => {
     expect(isReRelease(undefined, '2026-09-16', 3)).toBe(false)
     expect(isReRelease('', '2026-09-16', 3)).toBe(false)
+  })
+})
+
+describe('isShort', () => {
+  it('flags anything under an hour', () => {
+    expect(isShort(25)).toBe(true)
+    expect(isShort(59)).toBe(true)
+    expect(isShort(60)).toBe(false)
+    expect(isShort(132)).toBe(false)
+  })
+
+  it('keeps a film whose runtime TMDB does not know yet', () => {
+    expect(isShort(0)).toBe(false)
+    expect(isShort(null)).toBe(false)
+    expect(isShort(undefined)).toBe(false)
+  })
+})
+
+describe('isWantedOrigin', () => {
+  const wanted = ['FR', 'US', 'KR']
+
+  it('keeps a listed nationality and drops the others', () => {
+    expect(isWantedOrigin(['FR'], wanted)).toBe(true)
+    expect(isWantedOrigin(['IN'], wanted)).toBe(false)
+  })
+
+  it('keeps a co-production when any of its countries is listed', () => {
+    expect(isWantedOrigin(['CH', 'FR'], wanted)).toBe(true)
+    expect(isWantedOrigin(['CH', 'AT'], wanted)).toBe(false)
+  })
+
+  it('keeps a film with no nationality on file, and everything when nothing is listed', () => {
+    expect(isWantedOrigin([], wanted)).toBe(true)
+    expect(isWantedOrigin(undefined, wanted)).toBe(true)
+    expect(isWantedOrigin(['IN'], [])).toBe(true)
   })
 })
 
@@ -115,7 +150,7 @@ describe('syncCountry', () => {
   it('surfaces this week’s films in New, with their release and trailer', async () => {
     const tmdb = fakeTmdb(week)
     const stats = await syncCountry(env.DB, tmdb, 'FR', config, today)
-    expect(stats).toEqual({ seen: 3, fetched: 3, added: 3, reReleases: 0, pending: 0 })
+    expect(stats).toEqual({ seen: 3, fetched: 3, added: 3, reReleases: 0, shorts: 0, otherOrigins: 0, pending: 0 })
 
     const movies = await listMovies(env.DB, 'new')
     expect(movies.map(movie => movie.title).sort()).toEqual(['Les Contrebandiers', 'Resident Evil', 'Sham'])
@@ -151,7 +186,7 @@ describe('syncCountry', () => {
     await env.DB.prepare(`UPDATE entries SET status = 'watchlist', added_at = 'then' WHERE tmdb_id = 1`).run()
 
     const stats = await syncCountry(env.DB, tmdb, 'FR', config, today)
-    expect(stats).toEqual({ seen: 3, fetched: 0, added: 0, reReleases: 0, pending: 0 })
+    expect(stats).toEqual({ seen: 3, fetched: 0, added: 0, reReleases: 0, shorts: 0, otherOrigins: 0, pending: 0 })
     expect(await countByStatus(env.DB)).toEqual({ new: 2, watchlist: 1, watched: 0, archived: 0 })
     expect(tmdb.calls.movie).toHaveLength(4) // 3 films + the English fallback, all on the first run
   })
@@ -197,6 +232,24 @@ describe('syncCountry', () => {
 
     const again = await syncCountry(env.DB, tmdb, 'FR', config, today)
     expect(again.fetched).toBe(0)
+  })
+
+  it('stores a short without offering it for review, and does not fetch it again', async () => {
+    const films: FakeFilm[] = [...week, { id: 98, title: 'Courts métrages', releaseDate: '2026-09-16', overviewFr: 'Un programme.', runtime: 45 }]
+    const tmdb = fakeTmdb(films)
+    const stats = await syncCountry(env.DB, tmdb, 'FR', config, today)
+    expect(stats).toMatchObject({ fetched: 4, added: 3, shorts: 1 })
+    expect((await listMovies(env.DB, 'new')).map(movie => movie.tmdbId)).not.toContain(98)
+
+    const again = await syncCountry(env.DB, tmdb, 'FR', config, today)
+    expect(again.fetched).toBe(0)
+  })
+
+  it('stores a film of another nationality without offering it for review', async () => {
+    const films: FakeFilm[] = [...week, { id: 97, title: 'Pushpa', releaseDate: '2026-09-16', overviewFr: 'Un film indien.', originCountries: ['IN'] }]
+    const stats = await syncCountry(env.DB, fakeTmdb(films), 'FR', config, today)
+    expect(stats).toMatchObject({ fetched: 4, added: 3, otherOrigins: 1 })
+    expect((await listMovies(env.DB, 'new')).map(movie => movie.tmdbId)).not.toContain(97)
   })
 
   it('fetches a bounded number of new films per run and reports the rest as pending', async () => {

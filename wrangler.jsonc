@@ -39,11 +39,12 @@
 		}
 	],
 	// Which countries' cinema releases to watch (ISO 3166-1, comma-separated),
-	// how far a film may be re-released after its first release before it is
+	// which nationalities of film to offer for review (empty for all), how far a film may be re-released after its first release before it is
 	// treated as a re-release and skipped, and how many new films one sync run
 	// fetches details for.
 	"vars": {
 		"RELEASE_COUNTRIES": "FR",
+		"ORIGIN_COUNTRIES": "FR,US,BE,JP,KR,GB,IT,ES,NO,SE,DK,FI,IS",
 		"MAX_AGE_YEARS": "3",
 		"DETAILS_PER_RUN": "10"
 	},
@@ -68,6 +69,7 @@
 			],
 			"vars": {
 				"RELEASE_COUNTRIES": "FR",
+		"ORIGIN_COUNTRIES": "FR,US,BE,JP,KR,GB,IT,ES,NO,SE,DK,FI,IS",
 				"MAX_AGE_YEARS": "3",
 				"DETAILS_PER_RUN": "10"
 			}

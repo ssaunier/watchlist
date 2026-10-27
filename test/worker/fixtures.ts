@@ -22,6 +22,10 @@ export interface FakeFilm {
   /** Per country, explicit dated releases; overrides `releaseTypes`. */
   releaseEntries?: Record<string, { type: number; date: string }[]>
   genres?: { id: number; name: string }[]
+  /** Nationalities; defaults to France. */
+  originCountries?: string[]
+  /** Minutes; defaults to 101. */
+  runtime?: number | null
 }
 
 export function discoverMovie(film: FakeFilm): DiscoverMovie {
@@ -53,7 +57,8 @@ export function movieDetails(film: FakeFilm, language: string): MovieDetails {
     original_language: film.originalLanguage ?? 'fr',
     overview,
     genres: film.genres ?? [{ id: 18, name: 'Drame' }],
-    runtime: 101,
+    origin_country: film.originCountries ?? ['FR'],
+    runtime: film.runtime === undefined ? 101 : film.runtime,
     poster_path: `/poster-${film.id}.jpg`,
     release_date: film.primaryReleaseDate ?? film.releaseDate,
     vote_average: 7.1,

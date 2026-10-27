@@ -15,10 +15,14 @@ const LOOKBACK_DAYS = 28
 const LOOKAHEAD_DAYS = 7
 /** Discover pages hold 20 films; five weeks of French releases run to about 110. */
 const MAX_DISCOVER_PAGES = 10
+/** Below an hour it is a short, a mid-length or a filmed event, not a film for a movie night. */
+const MIN_RUNTIME = 60
 
 export interface SyncConfig {
   maxAgeYears: number
   detailsPerRun: number
+  /** Nationalities to offer for review; empty offers every one. */
+  originCountries: string[]
 }
 
 export interface SyncStats {
@@ -26,6 +30,8 @@ export interface SyncStats {
   fetched: number
   added: number
   reReleases: number
+  shorts: number
+  otherOrigins: number
   pending: number
 }
 
@@ -52,6 +58,25 @@ export function isReRelease(primaryReleaseDate: string | undefined, regionalDate
   const limit = new Date(regional)
   limit.setUTCFullYear(limit.getUTCFullYear() - maxAgeYears)
   return primary < limit
+}
+
+/**
+ * Feature films and documentaries only. TMDB leaves the runtime at 0 or
+ * null until someone fills it in, often after release, so an unknown
+ * runtime is given the benefit of the doubt.
+ */
+export function isShort(runtime: number | null | undefined): boolean {
+  return !!runtime && runtime < MIN_RUNTIME
+}
+
+/**
+ * Whether the film's nationality is one the household watches. A
+ * co-production passes when any of its countries does, and a film TMDB has
+ * no nationality for yet passes too.
+ */
+export function isWantedOrigin(originCountries: string[] | undefined, wanted: string[]): boolean {
+  if (!wanted.length || !originCountries?.length) return true
+  return originCountries.some(country => wanted.includes(country.toUpperCase()))
 }
 
 /**
@@ -159,7 +184,7 @@ export async function syncCountry(db: D1Database, tmdb: TmdbClient, country: str
   const known = await knownMovieIds(db, feed.map(movie => movie.id))
 
   const statements: Statement[] = []
-  const stats: SyncStats = { seen: feed.length, fetched: 0, added: 0, reReleases: 0, pending: 0 }
+  const stats: SyncStats = { seen: feed.length, fetched: 0, added: 0, reReleases: 0, shorts: 0, otherOrigins: 0, pending: 0 }
 
   // Films already in the database only need their release row kept current:
   // a postponed film's date moves and the row follows. A feed date outside
@@ -188,9 +213,12 @@ export async function syncCountry(db: D1Database, tmdb: TmdbClient, country: str
     const reRelease = isReRelease(details.release_date, release.date, config.maxAgeYears)
     statements.push(upsertMovie(db, movieRowFrom(details, overview, now)))
     statements.push(upsertRelease(db, { tmdb_id: movie.id, country, release_date: release.date, release_type: release.type }))
-    // A re-release is stored (so it is not fetched again next hour) but never
-    // offered for review: the household is looking for new films.
+    // A re-release, a short or a film from elsewhere is stored (so it is not
+    // fetched again next hour) but never offered for review: the household
+    // is looking for new films to watch in one evening.
     if (reRelease) stats.reReleases++
+    else if (isShort(details.runtime)) stats.shorts++
+    else if (!isWantedOrigin(details.origin_country, config.originCountries)) stats.otherOrigins++
     else {
       statements.push(ensureEntry(db, movie.id, now))
       stats.added++
@@ -209,10 +237,11 @@ export function parseCountries(value: string | undefined): string[] {
     .filter(code => /^[A-Z]{2}$/.test(code))
 }
 
-export async function syncAll(db: D1Database, tmdb: TmdbClient, env: { RELEASE_COUNTRIES?: string; MAX_AGE_YEARS?: string; DETAILS_PER_RUN?: string }, today = new Date()): Promise<Record<string, SyncStats>> {
+export async function syncAll(db: D1Database, tmdb: TmdbClient, env: { RELEASE_COUNTRIES?: string; ORIGIN_COUNTRIES?: string; MAX_AGE_YEARS?: string; DETAILS_PER_RUN?: string }, today = new Date()): Promise<Record<string, SyncStats>> {
   const config: SyncConfig = {
     maxAgeYears: Number(env.MAX_AGE_YEARS) || 3,
-    detailsPerRun: Number(env.DETAILS_PER_RUN) || 10
+    detailsPerRun: Number(env.DETAILS_PER_RUN) || 10,
+    originCountries: parseCountries(env.ORIGIN_COUNTRIES)
   }
   const results: Record<string, SyncStats> = {}
   for (const country of parseCountries(env.RELEASE_COUNTRIES)) {

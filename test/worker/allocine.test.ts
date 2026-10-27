@@ -110,7 +110,7 @@ describe('syncAllocine', () => {
         { id: 4, title: 'Something else', releaseDate: '2026-09-16', overviewFr: 'x' }
       ]),
       'FR',
-      { maxAgeYears: 3, detailsPerRun: 10 },
+      { maxAgeYears: 3, detailsPerRun: 10, originCountries: [] },
       today
     )
     const requested: string[] = []

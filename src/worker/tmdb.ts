@@ -51,6 +51,8 @@ export interface MovieDetails {
   original_language: string
   overview: string
   genres: { id: number; name: string }[]
+  /** ISO 3166-1 codes of the film's nationality; a co-production lists several. */
+  origin_country?: string[]
   runtime: number | null
   poster_path: string | null
   release_date: string

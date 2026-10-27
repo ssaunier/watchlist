@@ -19,6 +19,7 @@ export interface Env {
   TMDB_TOKEN: string
   APP_PASSWORD: string
   RELEASE_COUNTRIES: string
+  ORIGIN_COUNTRIES: string
   MAX_AGE_YEARS: string
   DETAILS_PER_RUN: string
 }

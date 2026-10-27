@@ -25,7 +25,7 @@ beforeEach(async () => {
       { id: 2, title: 'Les Contrebandiers', releaseDate: '2026-09-16', overviewFr: 'Des contrebandiers.' }
     ]),
     'FR',
-    { maxAgeYears: 3, detailsPerRun: 10 },
+    { maxAgeYears: 3, detailsPerRun: 10, originCountries: [] },
     new Date('2026-09-20T10:00:00Z')
   )
 })

@@ -15,7 +15,8 @@ later and on Canal+ after six. By then, the deciding has already been done.
   its discover feed what reached cinemas in the monitored countries over the
   last four weeks (and the week ahead), fetches the details of the newcomers
   (French title and synopsis, genres, runtime, poster, the original-version
-  trailer) and stores them. Re-releases are ignored. This product uses the
+  trailer) and stores them. Re-releases and films under an hour are ignored
+  (a runtime TMDB does not know yet counts as a film). This product uses the
   TMDB API but is not endorsed or certified by TMDB.
 - **Ratings** come from [Allociné](https://www.allocine.fr/): its weekly
   release agenda is read (one HTML page per Wednesday, no API exists) for the
@@ -84,6 +85,10 @@ production the cron does this every hour.
 - `RELEASE_COUNTRIES`: whose cinema releases to watch, ISO 3166-1 codes,
   comma-separated (`"FR"`, later `"FR,KR"`). Each country gets its own
   release-date row per film.
+- `ORIGIN_COUNTRIES`: which nationalities of film to offer in New, ISO 3166-1
+  codes as TMDB files them (`origin_country`). A co-production passes when
+  any of its countries is listed; a film with no nationality on file passes
+  too. Empty offers every film.
 - `MAX_AGE_YEARS`: a film first released more than this many years before it
   reached the country's cinemas is a re-release and is skipped.
 - `DETAILS_PER_RUN`: how many new films one sync run fetches. Kept small
