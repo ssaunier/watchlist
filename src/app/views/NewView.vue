@@ -7,8 +7,8 @@ import { useLocale } from '../composables/useLocale.js'
 import { useSheet } from '../composables/useSheet.js'
 import { useBreakpoint } from '../composables/useBreakpoint.js'
 import { releaseWeek } from '../services/dates.js'
-import { trailerSearchUrl } from '../services/images.js'
 import SwipeDeck from '../components/SwipeDeck.vue'
+import DeckControls from '../components/DeckControls.vue'
 import NewBrowse from '../components/NewBrowse.vue'
 import MovieSheet from '../components/MovieSheet.vue'
 import TrailerModal from '../components/TrailerModal.vue'
@@ -16,7 +16,7 @@ import PillButton from '../components/PillButton.vue'
 import EmptyState from '../components/EmptyState.vue'
 
 const { t } = useI18n()
-const { collator, locale } = useLocale()
+const { collator } = useLocale()
 const { lists, loading, counts, load, move, undo } = useMovies()
 const sheet = useSheet()
 const { isDesktop } = useBreakpoint()
@@ -82,31 +82,7 @@ onMounted(() => load('new'))
 
       <SwipeDeck ref="deck" :movies="movies" @keep="decide($event, 'watchlist')" @pass="decide($event, 'archived')" @open="sheet.open" />
 
-      <div class="mx-auto mt-5 flex w-full max-w-[26rem] items-center justify-between px-2">
-        <button
-          type="button"
-          @click="deck?.pass()"
-          :aria-label="t('deck.pass')"
-          class="grid size-16 place-items-center rounded-full border-2 border-ink-3 text-mist transition hover:border-mist hover:text-cream active:scale-95"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" class="size-7"><path d="M6 6l12 12M18 6 6 18" /></svg>
-        </button>
-
-        <div class="flex flex-col items-center gap-1 text-[14px]">
-          <button type="button" @click="sheet.open(top)" class="rounded-full px-3 py-1 text-cream/90 hover:text-cream">{{ t('deck.synopsis') }}</button>
-          <button v-if="top.trailerYoutubeKey" type="button" @click="sheet.playTrailer(top)" class="rounded-full px-3 py-1 text-cream/90 hover:text-cream">{{ t('film.trailer') }}</button>
-          <a v-else :href="trailerSearchUrl(top, locale)" target="_blank" rel="noreferrer" class="rounded-full px-3 py-1 text-mist hover:text-cream">{{ t('film.findTrailer') }}</a>
-        </div>
-
-        <button
-          type="button"
-          @click="deck?.keep()"
-          :aria-label="t('deck.keep')"
-          class="grid size-16 place-items-center rounded-full bg-gold text-gold-deep shadow-[0_10px_30px_-10px_rgb(233_185_73/0.6)] transition hover:brightness-105 active:scale-95"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-7"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
-        </button>
-      </div>
+      <DeckControls :movie="top" @pass="deck?.pass()" @keep="deck?.keep()" @open="sheet.open(top)" @trailer="sheet.playTrailer(top)" />
 
       <button
         v-if="history.length"

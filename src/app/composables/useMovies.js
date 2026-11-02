@@ -2,14 +2,14 @@ import { reactive, ref, computed } from 'vue'
 import { listMovies, patchMovie, getStatus, UnauthorizedError } from '../services/api.js'
 
 /**
- * One store for the four lists, shared by every view. A list is fetched the
+ * One store for the five lists, shared by every view. A list is fetched the
  * first time its view asks for it and again after it has been invalidated:
  * moving a film out of a list removes it there on the spot, while the list
  * it moves into is simply forgotten and refetched on the next visit.
  */
-const lists = reactive({ new: null, watchlist: null, watched: null, archived: null })
-const loading = reactive({ new: false, watchlist: false, watched: false, archived: false })
-const counts = reactive({ new: 0, watchlist: 0, watched: 0, archived: 0 })
+const lists = reactive({ new: null, catchup: null, watchlist: null, watched: null, archived: null })
+const loading = reactive({ new: false, catchup: false, watchlist: false, watched: false, archived: false })
+const counts = reactive({ new: 0, catchup: 0, watchlist: 0, watched: 0, archived: 0 })
 const lastSync = ref(null)
 const countries = ref('')
 const error = ref(null)
@@ -72,18 +72,18 @@ async function move(movie, status, extra = {}) {
 }
 
 /**
- * Puts a film just decided on back at the top of New. Unlike `move`, the
- * list is edited in place rather than forgotten, so the card reappears
- * where it was without a reload.
+ * Puts a film just decided on back at the top of the deck it came from, New
+ * or Catch up. Unlike `move`, the list is edited in place rather than
+ * forgotten, so the card reappears where it was without a reload.
  */
-async function undo(movie) {
+async function undo(movie, to = 'new') {
   const from = movie.status
-  const updated = await patchMovie(movie.tmdbId, { status: 'new' })
+  const updated = await patchMovie(movie.tmdbId, { status: to })
   Object.assign(movie, updated)
   remove(from, movie.tmdbId)
   counts[from] = Math.max(0, counts[from] - 1)
-  counts.new += 1
-  if (lists.new && !lists.new.some(entry => entry.tmdbId === movie.tmdbId)) lists.new.unshift(movie)
+  counts[to] += 1
+  if (lists[to] && !lists[to].some(entry => entry.tmdbId === movie.tmdbId)) lists[to].unshift(movie)
   return updated
 }
 

@@ -38,6 +38,9 @@ describe('transitions', () => {
     expect(canTransition('watched', 'new')).toBe(false)
     expect(canTransition('archived', 'new')).toBe(true)
     expect(canTransition('watchlist', 'new')).toBe(true) // the deck's undo
+    expect(canTransition('catchup', 'watchlist')).toBe(true)
+    expect(canTransition('catchup', 'watched')).toBe(false)
+    expect(canTransition('archived', 'catchup')).toBe(true) // Catch up's undo
   })
 })
 
@@ -84,7 +87,7 @@ describe('PATCH /api/movies/:id', () => {
 
   it('archives and restores', async () => {
     expect((await patch(1, { status: 'archived' })).body.status).toBe('archived')
-    expect((await api('/api/counts')).body).toEqual({ new: 1, watchlist: 0, watched: 0, archived: 1 })
+    expect((await api('/api/counts')).body).toEqual({ new: 1, catchup: 0, watchlist: 0, watched: 0, archived: 1 })
     expect((await patch(1, { status: 'new' })).body.status).toBe('new')
     expect((await patch(1, { status: 'archived' })).body.status).toBe('archived')
     expect((await patch(1, { status: 'watchlist' })).body.addedAt).toBeTruthy()
@@ -119,7 +122,7 @@ describe('PATCH /api/movies/:id', () => {
 describe('GET /api/status', () => {
   it('reports the last sync and the counts', async () => {
     const { body } = await api('/api/status')
-    expect(body.counts).toEqual({ new: 2, watchlist: 0, watched: 0, archived: 0 })
+    expect(body.counts).toEqual({ new: 2, catchup: 0, watchlist: 0, watched: 0, archived: 0 })
     expect(body.lastSync.country).toBe('FR')
     expect(body.lastSync.stats).toMatchObject({ added: 2 })
     expect(body.countries).toBe('FR')

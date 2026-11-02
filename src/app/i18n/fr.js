@@ -24,6 +24,7 @@ export default {
 
   nav: {
     new: 'Nouveautés',
+    catchup: 'Rattrapage',
     watchlist: 'À voir',
     watched: 'Vus'
   },
@@ -38,6 +39,17 @@ export default {
     undo: 'Annuler {title}',
     emptyTitle: 'Tout est trié',
     emptyHint: 'Les sorties arrivent ici chaque mercredi.'
+  },
+
+  catchup: {
+    title: 'Rattrapage',
+    intro: 'Les films sortis ces dernières années, sans doute déjà en streaming.',
+    sortPublic: 'Spectateurs',
+    sortPress: 'Presse',
+    sortRelease: 'Les plus récents',
+    showMore: 'Voir {n} de plus',
+    emptyTitle: 'Rien à rattraper',
+    emptyHint: 'Cette liste se remplit une fois, depuis un script.'
   },
 
   watchlist: {

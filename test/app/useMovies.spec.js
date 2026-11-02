@@ -17,7 +17,7 @@ function fakeApi(films) {
       return json({ ...film })
     }
     if (pathname === '/api/status') {
-      const counts = { new: 0, watchlist: 0, watched: 0, archived: 0 }
+      const counts = { new: 0, catchup: 0, watchlist: 0, watched: 0, archived: 0 }
       for (const film of films) counts[film.status]++
       return json({ counts, lastSync: { finished_at: '2026-09-20T08:00:00Z' }, countries: 'FR' })
     }
@@ -94,6 +94,19 @@ describe('useMovies', () => {
     expect(first.status).toBe('new')
     expect(counts).toMatchObject({ new: 2, archived: 0 })
     expect(api.patches.at(-1)).toEqual({ id: 1, patch: { status: 'new' } })
+  })
+
+  it('takes a Catch up decision back to Catch up', async () => {
+    const api = fakeApi([{ tmdbId: 1, status: 'catchup' }, { tmdbId: 2, status: 'catchup' }])
+    vi.stubGlobal('fetch', api.fetch)
+    const { load, lists, counts, move, undo } = useMovies()
+    await load('catchup')
+    const [first] = lists.catchup
+    await move(first, 'watchlist')
+    await undo(first, 'catchup')
+    expect(lists.catchup.map(movie => movie.tmdbId)).toEqual([1, 2])
+    expect(counts).toMatchObject({ catchup: 2, watchlist: 0 })
+    expect(api.patches.at(-1)).toEqual({ id: 1, patch: { status: 'catchup' } })
   })
 
   it('reads counts and the last sync from the status endpoint', async () => {

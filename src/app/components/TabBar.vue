@@ -1,5 +1,5 @@
 <script setup>
-/** The three lists, where a thumb can reach them. */
+/** The lists, where a thumb can reach them. */
 import { RouterLink, useRoute } from 'vue-router'
 defineProps({ tabs: { type: Array, required: true } })
 const route = useRoute()

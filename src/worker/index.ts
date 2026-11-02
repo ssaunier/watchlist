@@ -25,16 +25,18 @@ export interface Env {
 }
 
 /**
- * Where a film may go from each list. Archive is reachable from New and the
- * Watchlist; both ways out of Archive exist so changing one's mind never
- * means finding the film again, and a film just kept can go back to New
- * (the deck's undo).
+ * Where a film may go from each list. Catch up works like New, for older
+ * films. Archive is reachable from both and from the Watchlist; the ways
+ * out of Archive exist so changing one's mind never means finding the film
+ * again, and a film just kept or passed can go back to the deck it came
+ * from (the deck's undo).
  */
 export const TRANSITIONS: Record<Status, Status[]> = {
   new: ['watchlist', 'archived'],
-  watchlist: ['watched', 'archived', 'new'],
+  catchup: ['watchlist', 'archived'],
+  watchlist: ['watched', 'archived', 'new', 'catchup'],
   watched: ['watchlist'],
-  archived: ['new', 'watchlist']
+  archived: ['new', 'catchup', 'watchlist']
 }
 
 export function canTransition(from: Status, to: Status): boolean {

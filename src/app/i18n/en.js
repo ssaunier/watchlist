@@ -24,6 +24,7 @@ export default {
 
   nav: {
     new: 'New',
+    catchup: 'Catch up',
     watchlist: 'Watchlist',
     watched: 'Watched'
   },
@@ -38,6 +39,17 @@ export default {
     undo: 'Undo {title}',
     emptyTitle: 'You’re all caught up',
     emptyHint: 'New releases land here every Wednesday.'
+  },
+
+  catchup: {
+    title: 'Catch up',
+    intro: 'Films from the last few years, most likely streaming by now.',
+    sortPublic: 'Spectators',
+    sortPress: 'Press',
+    sortRelease: 'Most recent',
+    showMore: 'Show {n} more',
+    emptyTitle: 'Nothing to catch up on',
+    emptyHint: 'This list is filled once, from a script.'
   },
 
   watchlist: {

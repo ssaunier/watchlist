@@ -187,7 +187,7 @@ describe('syncCountry', () => {
 
     const stats = await syncCountry(env.DB, tmdb, 'FR', config, today)
     expect(stats).toEqual({ seen: 3, fetched: 0, added: 0, reReleases: 0, shorts: 0, otherOrigins: 0, pending: 0 })
-    expect(await countByStatus(env.DB)).toEqual({ new: 2, watchlist: 1, watched: 0, archived: 0 })
+    expect(await countByStatus(env.DB)).toEqual({ new: 2, catchup: 0, watchlist: 1, watched: 0, archived: 0 })
     expect(tmdb.calls.movie).toHaveLength(4) // 3 films + the English fallback, all on the first run
   })
 

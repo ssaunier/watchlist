@@ -31,8 +31,8 @@ export interface ReleaseRow {
   release_type: number | null
 }
 
-export type Status = 'new' | 'watchlist' | 'watched' | 'archived'
-export const STATUSES: Status[] = ['new', 'watchlist', 'watched', 'archived']
+export type Status = 'new' | 'catchup' | 'watchlist' | 'watched' | 'archived'
+export const STATUSES: Status[] = ['new', 'catchup', 'watchlist', 'watched', 'archived']
 
 export interface EntryRow {
   tmdb_id: number
@@ -208,7 +208,7 @@ export async function getMovie(db: D1Database, tmdbId: number): Promise<Movie | 
 }
 
 export async function countByStatus(db: D1Database): Promise<Record<Status, number>> {
-  const counts: Record<Status, number> = { new: 0, watchlist: 0, watched: 0, archived: 0 }
+  const counts: Record<Status, number> = { new: 0, catchup: 0, watchlist: 0, watched: 0, archived: 0 }
   const { results } = await db.prepare(`SELECT status, COUNT(*) AS n FROM entries GROUP BY status`).all<{ status: Status; n: number }>()
   for (const row of results) counts[row.status] = row.n
   return counts

@@ -16,6 +16,7 @@ const { locked } = useAuth()
 
 const tabs = computed(() => [
   { to: '/', name: 'new', label: t('nav.new'), count: counts.new, accent: true },
+  { to: '/catch-up', name: 'catchup', label: t('nav.catchup'), count: counts.catchup },
   { to: '/watchlist', name: 'watchlist', label: t('nav.watchlist'), count: counts.watchlist },
   { to: '/watched', name: 'watched', label: t('nav.watched'), count: counts.watched }
 ])
