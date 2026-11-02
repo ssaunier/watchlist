@@ -87,7 +87,16 @@ async function inParallel<T, R>(items: T[], limit: number, work: (item: T) => Pr
   return results
 }
 
+/** The first call after wrangler's login has expired can fail (7403) while it refreshes: ask twice. */
 function wrangler(args: string[]): string {
+  try {
+    return wranglerOnce(args)
+  } catch {
+    return wranglerOnce(args)
+  }
+}
+
+function wranglerOnce(args: string[]): string {
   return execFileSync('npx', ['wrangler', 'd1', 'execute', 'watchlist-production', '--remote', '--env', 'production', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
 }
 
